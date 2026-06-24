@@ -1,4 +1,4 @@
-import Homeview from "@/views/HomeView.vue"
+// import Homeview from "@/views/HomeView.vue"
 import { createRouter, createWebHashHistory } from "vue-router"
 // import videosview from "../views/VideosView.vue"
 
