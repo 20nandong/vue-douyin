@@ -31,14 +31,14 @@ const previousVolume = ref(50)
 
 //本地视频测试使用
 const localVideos = [
-  { id: 1, user: { name: "视频1" }, video_files: [{ link: "/苦力怕娘和末影女王怎么选_我的世界_minecraft_mc_文艺复兴我的世界动画.mp4" }] ,image: ""},
-  { id: 2, user: { name: "视频2" }, video_files: [{ link: "/video_这么看来黑海岸的忧郁程度应该在我..._0.mp4" }], image: "" },
-  { id: 3, user: { name: "视频3" }, video_files: [{ link: "/我想_伦敦或许适合两个人来_我的意思是我们见面吧_英国_伦敦_机位天才已就位_好久没见_梅见.mp4" }], image: "" },
-  { id: 4, user: { name: "视频4" }, video_files: [{ link: "/黎明时分的阳光总能唤醒我沉睡的灵魂_阳光高架桥清晨治愈系.mp4" }], image: "" },
-  { id: 5, user: { name: "视频5" }, video_files: [{ link: "/这么年轻_又何必太执着呢_梁祝_了不起的混剪团.mp4" }], image: "" },
-  { id: 6, user: { name: "视频6" }, video_files: [{ link: "/你给我站住京剧花旦_东方戏曲血脉觉醒_国潮花旦_谁能拒绝京剧的魅力.mp4" }] ,image: ""},
-  { id: 7, user: { name: "视频7" }, video_files: [{ link: "/百吨王_危险动作请勿模仿_陕汽德龙_组合技吗有点意思.mp4" }], image: "" },
-  { id: 8, user: { name: "视频8" }, video_files: [{ link: "/video_遇到我_就算是阎王也要叫声爷爷齐..._0.mp4" }], image: "" },
+  { id: 1, user: { name: "视频1" }, video_files: [{ link: "./苦力怕娘和末影女王怎么选_我的世界_minecraft_mc_文艺复兴我的世界动画.mp4" }] ,image: ""},
+  { id: 2, user: { name: "视频2" }, video_files: [{ link: "./video_这么看来黑海岸的忧郁程度应该在我..._0.mp4" }], image: "" },
+  { id: 3, user: { name: "视频3" }, video_files: [{ link: "./我想_伦敦或许适合两个人来_我的意思是我们见面吧_英国_伦敦_机位天才已就位_好久没见_梅见.mp4" }], image: "" },
+  { id: 4, user: { name: "视频4" }, video_files: [{ link: "./黎明时分的阳光总能唤醒我沉睡的灵魂_阳光高架桥清晨治愈系.mp4" }], image: "" },
+  { id: 5, user: { name: "视频5" }, video_files: [{ link: "./这么年轻_又何必太执着呢_梁祝_了不起的混剪团.mp4" }], image: "" },
+  { id: 6, user: { name: "视频6" }, video_files: [{ link: "./你给我站住京剧花旦_东方戏曲血脉觉醒_国潮花旦_谁能拒绝京剧的魅力.mp4" }] ,image: ""},
+  { id: 7, user: { name: "视频7" }, video_files: [{ link: "./百吨王_危险动作请勿模仿_陕汽德龙_组合技吗有点意思.mp4" }], image: "" },
+  { id: 8, user: { name: "视频8" }, video_files: [{ link: "./video_遇到我_就算是阎王也要叫声爷爷齐..._0.mp4" }], image: "" },
 ]
 
 const loadVideos = () => {
