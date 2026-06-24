@@ -1,7 +1,10 @@
 <script setup>
-import { ref,onMounted } from "vue"
-import router from "../router/index.ts"
-import homeicon from "../components/icons/homeicon.vue"
+import { ref,onMounted,onUnmounted,computed } from "vue"
+
+// import router from "../router/index.ts"
+import { useRouter } from 'vue-router'
+const router = useRouter()
+
 
 // 存储所有导航信息
 const navs = [
@@ -19,10 +22,32 @@ const navs = [
     { name: "小游戏", routeName: "xiaoyouxi", position: "background-position: -336px 0px;" }
 ]
 
-//当前导航
+//响应式数据
 const curNav = ref("精选")
+const searchActive = ref(false)
+const searchvalue =  ref("")
 
-//动态计算css样式的class
+const handleResize = () => {
+    screenWidth.value = window.innerWidth
+}
+
+//获取屏幕宽度
+const screenWidth = ref(window.innerWidth)
+const searchBarStyle = computed(() => {
+    //动态计算搜索框的位置
+    const toolbarWidth = 170 + 16 + 32 + 16 //工具栏宽度+右边距+头像宽度+额外边距
+    return {
+        width:screenWidth.value < 768 ? '80%' : '40%',
+        maxWidth:'500px',
+        minWidth:'300px'
+    
+    }
+})
+
+
+
+
+//动态计算css样式的class 导航相关
 function navClass(nav){
     let cls_list = []
     cls_list.push(nav.name != "line" ? "nav" : "nav-line")
@@ -41,10 +66,14 @@ function navClick(nav){
 
 onMounted(() => {
     curNav.value = "推荐"
+    window.addEventListener('resize',handleResize)
 })
 
-const searchActive = ref(false)
-const searchvalue =  ref("")
+
+//清理时间监听
+onUnmounted(() => {
+    window.removeEventListener('resize',handleResize)
+})
 
 </script>
 
@@ -53,70 +82,75 @@ const searchvalue =  ref("")
         <div class="left">
             <div class="logo"></div>
             <div class="nav-wrapper">
-                <div v-for="nav, home in navs" :key="home" :class="navClass(nav)" @click="navClick(nav)">
+                <div v-for="(nav,index) in navs" :key="index" :class="navClass(nav)" @click="navClick(nav)">
                     <div v-if="nav.name != 'line'" class="nav-icon" :style="nav.position"></div>
                     <span v-if="nav.name != 'line'">{{ nav.name }}</span>
                 </div>
             </div>
         </div>
+
         <div class="right">
             <div class="top">
-                <!-- blur 鼠标移开后，失去焦点，恢复原有样式 -->
-                <div class="search-bar" :class="{'active' : searchActive}" @blur="searchActive=false" @focus="searchActive=true">
-                    <el-input v-model="searchvalue" placeholder="搜索你感兴趣的内容"></el-input>
-                    <div class="shuxian"></div>
-                    <el-button>搜索</el-button>
+                <div class="top-content">
+                    <!-- blur 鼠标移开后，失去焦点，恢复原有样式 -->
+                     <div class="search-container">
+                         <div class="search-bar"
+                         :class="{'active' : searchActive}"
+                         @blur="searchActive=false"
+                         @focus="searchActive=true"
+                         >
+                             <el-input v-model="searchvalue" placeholder="搜索你感兴趣的内容"></el-input>
+                             <div class="shuxian"></div>
+                             <el-button>搜索</el-button>
+                         </div>
+                    </div>
+
+                    <div class="tool-bar">
+                        <div class="tool-bar-item">
+                            <svg class="icon" aria-hidden="true">
+                                <use xlink:href="#icon-douyin"></use>
+                            </svg>
+                            <div>充钻石</div>
+                        </div>
+                        <div class="tool-bar-item">
+                            <svg class="icon" aria-hidden="true">
+                                <use xlink:href="#icon-download"></use>
+                            </svg>
+                            <div>客户端</div>
+                        </div>
+                        <div class="tool-bar-item">
+                            <svg class="icon" aria-hidden="true">
+                                <use xlink:href="#icon-wallpaper"></use>
+                            </svg>
+                            <div>壁纸</div>
+                        </div>
+                        <div class="tool-bar-item">
+                            <svg class="icon" aria-hidden="true">
+                                <use xlink:href="#icon-notice"></use>
+                            </svg>
+                            <div>通知</div>
+                        </div>
+                        <div class="tool-bar-item">
+                            <svg class="icon" aria-hidden="true">
+                                <use xlink:href="#icon-reply"></use>
+                            </svg>
+                            <div>私信</div>
+                        </div>
+                        <div class="tool-bar-item">
+                            <svg class="icon" aria-hidden="true">
+                                <use xlink:href="#icon-create"></use>
+                            </svg>
+                            <div>投稿</div>
+                        </div>
+                        <div class="tool-bar-avatar">
+                            <img src="../assets/img/avatar.png" alt="头像">
+                        </div>
                 </div>
-                <div class="tool-bar">
-                    <div class="tool-bar-item">
-                        <svg class="icon" aria-hidden="true">
-                            <use xlink:href="#icon-douyin"></use>
-                        </svg>
-                        <div>充钻石</div>
-                    </div>
-                    <div class="tool-bar-item">
-                        <svg class="icon" aria-hidden="true">
-                            <use xlink:href="#icon-download"></use>
-                        </svg>
-                        <div>客户端</div>
-                    </div>
-                    <div class="tool-bar-item">
-                        <svg class="icon" aria-hidden="true">
-                            <use xlink:href="#icon-wallpaper"></use>
-                        </svg>
-                        <div>壁纸</div>
-                    </div>
-                    <div class="tool-bar-item">
-                        <svg class="icon" aria-hidden="true">
-                            <use xlink:href="#icon-notice"></use>
-                        </svg>
-                        <div>通知</div>
-                    </div>
-                    <div class="tool-bar-item">
-                        <svg class="icon" aria-hidden="true">
-                            <use xlink:href="#icon-reply"></use>
-                        </svg>
-                        <div>私信</div>
-                    </div>
-                    <div class="tool-bar-item">
-                        <svg class="icon" aria-hidden="true">
-                            <use xlink:href="#icon-create"></use>
-                        </svg>
-                        <div>投稿</div>
-                    </div>
-                    <div class="tool-bar-avatar">
-                        <img src="../assets/img/avatar.png" alt="头像">
-                    </div>
                 </div>
             </div>
 
-            <div class="icon-item">
-                
-            </div>
-
-            <div>
-                <router-view></router-view>
-            </div>
+            <router-view></router-view>
+            
         </div>
         
     </div>
@@ -126,16 +160,19 @@ const searchvalue =  ref("")
 <style scoped lang="less">
 .home-container{
     display:flex;
-    width:100%;
-    height:100%;
+    width:100vw;
+    height:100vh;
+    max-width:100%;
+    max-height:100%;
 }
 
 .left{
     display:flex;
     //纵向
     flex-direction:column;
-    width:160px;
-    height:100%;
+    width:10vw;
+    height:100vh;
+    max-width: 10%;
     .logo{
         height:50px;
         background-image: url("../assets/img/douyin_logo.png");
@@ -147,9 +184,10 @@ const searchvalue =  ref("")
         flex-direction:column;
         color:rgba(255,255,255,0.75);
         align-items:center;
+        font-size: 17px;
         .nav{
             display:flex;
-            width:128px;
+            width:108px;
             height:40px;
             padding:8px 0 8px 16px;
             //content是否包含border
@@ -157,10 +195,10 @@ const searchvalue =  ref("")
             cursor:pointer;
             opacity:0.75;
             border-radius:12px;
-
             &:hover{
                 background-color:rgb(44,46,56);
-
+                color:rgba(255,255,255,1);
+                transform: scale(1.03);
             }
             .nav-icon{
                 width:24px;
@@ -180,127 +218,144 @@ const searchvalue =  ref("")
     }
 }
 
-.right{
-    display:flex;
-    flex-direction:column;
-    margin:10px;
-    flex-grow:1;
-    //视频播放组件会设置绝对定位，所以父元素需要设置相对定位
-    position:relative;
-    .top{
-        display:flex;
-        justify-content:flex-end;
-        height:56px;
-        margin-right:16px;
-        //开启相对定位，使搜索框能够相对于父元素进行绝对定位
-        position:relative;
-        .search-bar{
-            //启用绝对定位
-            position:absolute;
-            right:640px;
-            width:600px;
-            height:40px;
-            display:flex;
-            align-items:center;
-            background:rgba(255,255,255,0.15);
-            border:1px solid rgba(255,255,255,0.16);
-            box-sizing:border-box;
-            border-radius:12px;
-            :deep(.el-input){
-                background:0 0;
-                .el-input__wrapper{
-                    padding:0 4px;
+.right {
+    width:90vh;
+    height:100vh;
+    display: flex;
+    flex-direction: column;
+    margin: 10px;
+    flex-grow: 1;
+    position: relative;
+
+    .top {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        height: 6vh;
+        width: 90vw;
+        position: relative; // 确保子元素的绝对定位以此为参照
+
+        .search-bar {
+            
+            width: 450px; 
+            max-width: 90%; // 防止在小屏幕上溢出
+            height: 40px;
+            
+            // 2. 开启绝对定位，向右偏移父容器宽度的一半 (50%)
+            position: absolute; 
+            left: 50%; 
+            
+            // 3. 向左回退自身宽度的一半 (-250px)，实现完美居中
+            margin-left: -250px; 
+            
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            box-sizing: border-box;
+            border-radius: 12px;
+            z-index: 10; // 确保层级
+
+            :deep(.el-input) {
+                background: 0 0;
+                .el-input__wrapper {
+                    padding: 0 4px;
                     background: 0 0;
-                    box-shadow:none;
-                    .el-input__inner{
-                        padding:0 12px;
-                        height:38px;
-                        font-size:16px;
-                        line-height:22px;
-                        color:rgba(255,255,255,0.75);
-                        background:0 0;
-                        //修改光标颜色
-                        caret-color:#fe2c55;
+                    box-shadow: none;
+                    .el-input__inner {
+                        padding: 0 12px;
+                        height: 38px;
+                        font-size: 16px;
+                        line-height: 22px;
+                        color: rgba(255, 255, 255, 0.75);
+                        background: 0 0;
+                        caret-color: #fe2c55;
                     }
                 }
             }
-            .shuxian{
-                width:1px;
-                height:16px;
-                border-left:1px solid rgba(255,255,255,0.16);
-
+            .shuxian {
+                width: 1px;
+                height: 16px;
+                border-left: 1px solid rgba(255, 255, 255, 0.16);
             }
-            //设置按钮样式，深度选择器，修改第三方组件样式
-            :deep(.el-button){
-                display:flex;
-                width:80px;
-                height:38px;
-                padding:0;
-                background:0 0 ;
-                border:none;
-                outline:none;
-                box-shadow:none;
-                color:#fff;
-                border-radius:0 8px 8px 0;
-                font-size:17px;
-                // &.hover,
-                // &.active{
-                //     // color:#000;
-                //     // background-color:#fff;
-                // }
 
+            :deep(.el-button) {
+                display: flex;
+                width: 80px;
+                height: 30px;
+                padding: 0;
+                background: 0 0;
+                border: none;
+                outline: none;
+                box-shadow: none;
+                color: #fff;
+                border-radius: 0 8px 8px 0;
+                font-size: 17px;
             }
             &:hover,
-            &.active{
-                border-width:2px;
-                border-color:#fff;
-
-                :deep(.el-button){
-                    color:gray;
-                    // color:#000;
-                    background-color:#fff;
-                }
-                .shuxian{
+            &.active {
+                border-width: 2px;
+                border-color: #fff;
+                :deep(.el-button) {
+                    color: gray;
+                    background-color: #fff;
                     height:100%;
-                    background-color:#fff;
-                    border-left:1px solid #fff;
+                }
+                .shuxian {
+                    height: 100%;
+                    background-color: #fff;
+                    border-left: 1px solid #fff;
                 }
             }
         }
 
-        .tool-bar{
-            display:flex;
-            color:rgba(255,255,255,0.6);
-            .tool-bar-item{
-                display:flex;
-                flex-direction:column;
-                align-items:center;
-                margin-right:8px;
+        .tool-bar {
+            display: flex;
+            align-items: center;
+            right: 0.5vw;
+            // 保持原有的相对定位或静态定位，它会在正常文档流中靠右
+            // 因为搜索框是绝对定位脱离了文档流，所以这里不需要特殊处理
+            position: relative; 
+            color: rgba(255, 255, 255, 0.6);
+            // background: rgba(0, 0, 0, 0.5);
+            padding: 4px 8px;
+            // border-radius: 8px;
+
+            margin-right: 5px;
+
+            .tool-bar-item {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                margin-right: 8px;
                 width: auto;
-                min-width:32px;
-                cursor:pointer;
-                &:hover{
-                    color:white;
+                min-width: 30px;
+                cursor: pointer;
+                // font-size: 12px;
+                &:hover {
+                    color: white;
+                    transform: scale(1.02);
                 }
-                .icon{
-                    width:15px;
-                    height:15px;
+                .icon {
+                    width: 17px;
+                    height: 17px;
+                    // margin-bottom: 1px;
                 }
-                div{
+                div {
+                    // line-height: 1.2;
                     font-size:12px;
                     line-height:25px;
                 }
             }
         }
-        .tool-bar-avatar{
-            img{
-                width:32px;
-                height:32px;
-                border-radius:50%;
+        
+        .tool-bar-avatar {
+            img {
+                width: 32px;
+                height: 32px;
+                border-radius: 50%;
+                cursor: pointer;
             }     
-
-            
-
         }
     }
 }

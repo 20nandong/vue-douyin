@@ -1,6 +1,10 @@
+import Homeview from "@/views/HomeView.vue"
 import { createRouter, createWebHashHistory } from "vue-router"
+import Videosview from "../views/videosview.vue"
 
-const blockview = () => import("../views/blockview.vue")
+const blockview = () => import("../views/BlockView.vue")
+const videosView = () => import("../views/VideosView.vue")
+
 
 const router = createRouter({
     history:createWebHashHistory(),
@@ -8,17 +12,12 @@ const router = createRouter({
         {
         name:"home",
         path:"/",
-        component:() => import("../views/homeview.vue"),
+        component:() => import("../views/HomeView.vue"),
         //重定向到路由
         redirect:"/tuijian",
         children: [
-            // {
-            //     name:"blcok",
-            //     path:"block",
-            //     component:() => import("../views/blockview.vue")
-            // },
             { name: "jingxuan", path: "jingxuan", component: blockview },
-            { name: "tuijian", path: "tuijian", component:  blockview},
+            { name: "tuijian", path: "tuijian", component: videosView},
             { name: "sousuo", path: "sousuo", component: blockview },
             { name: "guanzhu", path: "guanzhu", component: blockview },
             { name: "pengyou", path: "pengyou", component: blockview },

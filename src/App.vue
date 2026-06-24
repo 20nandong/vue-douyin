@@ -17,6 +17,8 @@
   }
 
   body,html{
+    width:100vw;
+    height:100vh;
     overflow:hidden;
     background-color:rgb(22,24,35);
   }
