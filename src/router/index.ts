@@ -1,9 +1,9 @@
 import Homeview from "@/views/HomeView.vue"
 import { createRouter, createWebHashHistory } from "vue-router"
-import Videosview from "../views/videosview.vue"
+// import videosview from "../views/VideosView.vue"
 
 const blockview = () => import("../views/BlockView.vue")
-const videosView = () => import("../views/VideosView.vue")
+const videosview = () => import("../views/VideosView.vue")
 
 
 const router = createRouter({
@@ -17,7 +17,7 @@ const router = createRouter({
         redirect:"/tuijian",
         children: [
             { name: "jingxuan", path: "jingxuan", component: blockview },
-            { name: "tuijian", path: "tuijian", component: videosView},
+            { name: "tuijian", path: "tuijian", component: videosview},
             { name: "sousuo", path: "sousuo", component: blockview },
             { name: "guanzhu", path: "guanzhu", component: blockview },
             { name: "pengyou", path: "pengyou", component: blockview },
