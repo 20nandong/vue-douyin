@@ -440,6 +440,7 @@ const formatTime = (seconds) => {
                   </div>
                 </div>
 
+                
                 <!-- 播放/暂停按钮 -->
                  <div class="center-play-control" @click="togglePlay">
                   <!-- 暂停显示播放键 -->
@@ -521,8 +522,8 @@ const formatTime = (seconds) => {
                    <div class="progress-dot" :style="{left:progressPercent + '%'}"></div>
                 </div>
 
-
                 
+
                 <!-- 视频信息 -->
                 <div v-if="currentVideoData" class="video-info">
                   <h3>{{ currentVideoData.user?.name || '未知用户' }}</h3>
@@ -531,7 +532,7 @@ const formatTime = (seconds) => {
                 </div>
               </div>
 
-              
+
 
             </div>
             
