@@ -31,14 +31,14 @@ const previousVolume = ref(50)
 
 //本地视频测试使用
 const localVideos = [
-  { id: 1, user: { name: "视频1" }, video_files: [{ link: "./苦力怕娘和末影女王怎么选_我的世界_minecraft_mc_文艺复兴我的世界动画.mp4" }] ,image: ""},
-  { id: 2, user: { name: "视频2" }, video_files: [{ link: "./video_这么看来黑海岸的忧郁程度应该在我..._0.mp4" }], image: "" },
-  { id: 3, user: { name: "视频3" }, video_files: [{ link: "./我想_伦敦或许适合两个人来_我的意思是我们见面吧_英国_伦敦_机位天才已就位_好久没见_梅见.mp4" }], image: "" },
-  { id: 4, user: { name: "视频4" }, video_files: [{ link: "./黎明时分的阳光总能唤醒我沉睡的灵魂_阳光高架桥清晨治愈系.mp4" }], image: "" },
-  { id: 5, user: { name: "视频5" }, video_files: [{ link: "./这么年轻_又何必太执着呢_梁祝_了不起的混剪团.mp4" }], image: "" },
-  { id: 6, user: { name: "视频6" }, video_files: [{ link: "./你给我站住京剧花旦_东方戏曲血脉觉醒_国潮花旦_谁能拒绝京剧的魅力.mp4" }] ,image: ""},
-  { id: 7, user: { name: "视频7" }, video_files: [{ link: "./百吨王_危险动作请勿模仿_陕汽德龙_组合技吗有点意思.mp4" }], image: "" },
-  { id: 8, user: { name: "视频8" }, video_files: [{ link: "./video_遇到我_就算是阎王也要叫声爷爷齐..._0.mp4" }], image: "" },
+  { id: 1, sourceType:'local', user: { name: "视频1" }, video_files: [{ link: "https://videos-vue.oss-cn-chengdu.aliyuncs.com/video_%E8%BF%99%E4%B9%88%E7%9C%8B%E6%9D%A5%E9%BB%91%E6%B5%B7%E5%B2%B8%E7%9A%84%E5%BF%A7%E9%83%81%E7%A8%8B%E5%BA%A6%E5%BA%94%E8%AF%A5%E5%9C%A8%E6%88%91..._0.mp4" }] ,image: ""},
+  { id: 2, sourceType:'vimeo', vimeoId:'', user: { name: "视频2" }, video_files: [{ link: "https://videos-vue.oss-cn-chengdu.aliyuncs.com/%E6%88%91%E6%83%B3_%E4%BC%A6%E6%95%A6%E6%88%96%E8%AE%B8%E9%80%82%E5%90%88%E4%B8%A4%E4%B8%AA%E4%BA%BA%E6%9D%A5_%E6%88%91%E7%9A%84%E6%84%8F%E6%80%9D%E6%98%AF%E6%88%91%E4%BB%AC%E8%A7%81%E9%9D%A2%E5%90%A7_%E8%8B%B1%E5%9B%BD_%E4%BC%A6%E6%95%A6_%E6%9C%BA%E4%BD%8D%E5%A4%A9%E6%89%8D%E5%B7%B2%E5%B0%B1%E4%BD%8D_%E5%A5%BD%E4%B9%85%E6%B2%A1%E8%A7%81_%E6%A2%85%E8%A7%81.mp4" }], image: "" },
+  { id: 3, sourceType:'vimeo', user: { name: "视频3" }, video_files: [{ link: "https://videos-vue.oss-cn-chengdu.aliyuncs.com/%E8%8B%A6%E5%8A%9B%E6%80%95%E5%A8%98%E5%92%8C%E6%9C%AB%E5%BD%B1%E5%A5%B3%E7%8E%8B%E6%80%8E%E4%B9%88%E9%80%89_%E6%88%91%E7%9A%84%E4%B8%96%E7%95%8C_minecraft_mc_%E6%96%87%E8%89%BA%E5%A4%8D%E5%85%B4%E6%88%91%E7%9A%84%E4%B8%96%E7%95%8C%E5%8A%A8%E7%94%BB.mp4" }], image: "" },
+  { id: 4, sourceType:'vimeo', user: { name: "视频4" }, video_files: [{ link: "https://videos-vue.oss-cn-chengdu.aliyuncs.com/%E7%99%BE%E5%90%A8%E7%8E%8B_%E5%8D%B1%E9%99%A9%E5%8A%A8%E4%BD%9C%E8%AF%B7%E5%8B%BF%E6%A8%A1%E4%BB%BF_%E9%99%95%E6%B1%BD%E5%BE%B7%E9%BE%99_%E7%BB%84%E5%90%88%E6%8A%80%E5%90%97%E6%9C%89%E7%82%B9%E6%84%8F%E6%80%9D.mp4" }], image: "" },
+  { id: 5, sourceType:'vimeo', user: { name: "视频5" }, video_files: [{ link: "https://videos-vue.oss-cn-chengdu.aliyuncs.com/video_%E9%81%87%E5%88%B0%E6%88%91_%E5%B0%B1%E7%AE%97%E6%98%AF%E9%98%8E%E7%8E%8B%E4%B9%9F%E8%A6%81%E5%8F%AB%E5%A3%B0%E7%88%B7%E7%88%B7%E9%BD%90..._0.mp4" }], image: "" },
+  { id: 6, sourceType:'vimeo', user: { name: "视频6" }, video_files: [{ link: "https://videos-vue.oss-cn-chengdu.aliyuncs.com/%E9%BB%8E%E6%98%8E%E6%97%B6%E5%88%86%E7%9A%84%E9%98%B3%E5%85%89%E6%80%BB%E8%83%BD%E5%94%A4%E9%86%92%E6%88%91%E6%B2%89%E7%9D%A1%E7%9A%84%E7%81%B5%E9%AD%82_%E9%98%B3%E5%85%89%E9%AB%98%E6%9E%B6%E6%A1%A5%E6%B8%85%E6%99%A8%E6%B2%BB%E6%84%88%E7%B3%BB.mp4" }] ,image: ""},
+  { id: 7, sourceType:'vimeo', user: { name: "视频7" }, video_files: [{ link: "https://videos-vue.oss-cn-chengdu.aliyuncs.com/%E4%BD%A0%E7%BB%99%E6%88%91%E7%AB%99%E4%BD%8F%E4%BA%AC%E5%89%A7%E8%8A%B1%E6%97%A6_%E4%B8%9C%E6%96%B9%E6%88%8F%E6%9B%B2%E8%A1%80%E8%84%89%E8%A7%89%E9%86%92_%E5%9B%BD%E6%BD%AE%E8%8A%B1%E6%97%A6_%E8%B0%81%E8%83%BD%E6%8B%92%E7%BB%9D%E4%BA%AC%E5%89%A7%E7%9A%84%E9%AD%85%E5%8A%9B.mp4" }], image: "" },
+  { id: 8, sourceType:'vimeo', user: { name: "视频8" }, video_files: [{ link: "https://videos-vue.oss-cn-chengdu.aliyuncs.com/%E8%BF%99%E4%B9%88%E5%B9%B4%E8%BD%BB_%E5%8F%88%E4%BD%95%E5%BF%85%E5%A4%AA%E6%89%A7%E7%9D%80%E5%91%A2_%E6%A2%81%E7%A5%9D_%E4%BA%86%E4%B8%8D%E8%B5%B7%E7%9A%84%E6%B7%B7%E5%89%AA%E5%9B%A2.mp4" }], image: "" },
 ]
 
 const loadVideos = () => {
@@ -289,9 +289,7 @@ const onVolumeChange = () => {
 const videoContainer = ref(null)//获取视频容器ref
 const isFullscreen = ref(false)
 
-//播放/暂停状态同步
-const onVideoPlay = () => { isPlaying.value = true }
-const onVideoPause = () => {isPlaying.value = false}
+
 
 //切换全屏
 const toggleFullscreen = () => {
@@ -442,7 +440,7 @@ const formatTime = (seconds) => {
 
                 
                 <!-- 播放/暂停按钮 -->
-                 <div class="center-play-control" @click="togglePlay">
+                 <div class="left-play-control" @click="togglePlay">
                   <!-- 暂停显示播放键 -->
                   <svg v-if="!isPlaying" t="1781701207958" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="5004" width="200" height="200">
                       <path d="M122.112664 953.98846l816.371172-407.954319c0.723477-0.342808 1.411139-0.689708 2.099824-1.051959l1.107217-0.550539 0-0.077771c11.644201-6.757914 19.488867-19.377326 19.488867-33.827433 0-14.452153-7.844665-27.070542-19.488867-33.828456l0-0.228197L120.241037 65.955154c-1.14508-0.649799-2.310625-1.24127-3.51301-1.77646l-2.481518-1.240247-0.230244 0.170892c-4.047176-1.431605-8.41874-2.196015-12.96222-2.196015-21.589714 0-39.096437 17.506722-39.096437 39.096437 0 0.192382 0 0.382717 0 0.593518l0 821.276902 0.01842 0c0.438998 21.210068 17.754363 38.255279 39.078017 38.255279C108.80559 960.13546 116.040365 957.887256 122.112664 953.98846z" fill="#ffffff" p-id="5005">
@@ -691,8 +689,8 @@ const formatTime = (seconds) => {
         }
 
 
-        // 居中显示播放/暂停按钮
-        .center-play-control{
+        // 左下角显示播放/暂停按钮
+        .left-play-control{
           position: absolute;
           bottom: 20px;
           left: 20px;
