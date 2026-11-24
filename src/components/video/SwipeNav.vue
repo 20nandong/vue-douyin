@@ -48,16 +48,23 @@ const emit = defineEmits<{
   justify-content: center;
   align-items: center;
 
+  /**
+   * 胶囊尺寸随屏幕缩放：clamp(最小值, 中间值, 最大值)。
+   *
+   * 为什么不用百分比：父级 .nav-rail 只有 5vw 宽（最小 40px），
+   * 在里面写 % 是"相对胶囊自己"，绕一圈还是定值。
+   * vw / vh 才是相对屏幕的，外面再套 clamp 限住上下限，窗口再大再小都不会变形。
+   */
   .button-container {
-    width: 24px;
-    height: 68px;
+    width: clamp(36px, 3vw, 46px);
+    /* 高度跟着视口高度走：570 高的窗口给 84，1080 高给到 110 封顶 */
+    height: clamp(84px, 11vh, 110px);
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
     align-items: center;
     background-color: rgba(255, 255, 255, 0.1);
-    border-radius: 28px;
-    padding: 10px 0;
+    border-radius: 999px;
+    padding: clamp(6px, 0.8vh, 10px) 0;
     box-sizing: border-box;
     transition: background-color 0.2s;
 
@@ -67,19 +74,27 @@ const emit = defineEmits<{
   }
 
   .nav-button {
-    width: 24px;
-    height: 20px;
-    background-color: rgba(255, 255, 255, 0);
+    /* 整块都能点：宽度吃满胶囊、上下各占一半，
+       热区从原来的 24×20 变成约 46×44，不用瞄那么准了 */
+    flex: 1;
+    width: 100%;
+    background-color: transparent;
     border: none;
     cursor: pointer;
     display: flex;
     justify-content: center;
     align-items: center;
     padding: 0;
+    border-radius: 999px;
+    transition: background-color 0.2s;
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.12);
+    }
 
     .icon {
-      width: 16px;
-      height: 16px;
+      width: clamp(15px, 1.4vw, 20px);
+      height: clamp(15px, 1.4vw, 20px);
       fill: #fff;
       opacity: 0.85;
       transition: opacity 0.2s;
