@@ -77,7 +77,7 @@ src/
 │   ├── VideoControls.vue        # 音量面板 + 左下播放键 + 右下全屏 + 底部进度条（多根组件）
 │   ├── SideActions.vue          # 右侧竖排：点赞/评论/收藏/分享（目前纯装饰）
 │   ├── VideoMeta.vue            # 左下角作者名、作者主页、第 n / 总数
-│   └── SwipeNav.vue             # 最右侧上一条/下一条按钮（absolute 定位，见 6.6）
+│   └── SwipeNav.vue             # 上一条/下一条胶囊（由 VideosView 的 .nav-rail 列定位，见 6.6）
 │
 ├── views/
 │   ├── HomeView.vue             # 外壳：左侧导航 + 顶部搜索栏 + <router-view>
@@ -153,16 +153,28 @@ VITE_PEXELS_API_KEY=xxxxx
 - 所有 `VITE_` 前缀变量都会被打包进前端产物，等同于公开。真正的密钥只能放后端。
 - 历史提交里可能仍残留旧密钥，因此**吊销旧 Key 比删代码更重要**。
 
-### 6.6 上/下切换按钮为什么用 absolute
+### 6.6 上/下切换按钮为什么放在 `.nav-rail` 列里
 
-`SwipeNav.vue` 是 `.videos-view` 的子元素，但样式上是 `position: absolute; top: 50%; right: 6px; transform: translateY(-50%)`。
+真实抖音的版式：**视频卡片左边贴内容区，右边留一条窄列，上/下切换胶囊在这条列里垂直居中，不在视频画面内。**
 
-**别改回 flex 子元素。** 它一旦参与 `.videos-view` 的 flex 布局，就会占掉固定宽度（原来是 `4vw`），
-把 `.content-wrapper` / 视频容器挤窄，自己则被推到画面右侧的黑边上，看起来像"飘在视频外面"。
-脱离文档流后：视频容器能占满整个宽度，按钮正好压在视频右边缘、垂直居中——这才是抖音的版式。
+所以 `VideosView.vue` 的 `.main` 是两列：`.videos-view`（卡片，`flex:1 1 auto`）+ `.nav-rail`（`flex: 0 0 5vw; height:92vh; align-items:center`），`SwipeNav` 放在 `.nav-rail` 里，自身不写任何坐标。
 
-实测坐标（1080×570 视口）：`.videos-view` 右边缘 1036，胶囊 1006–1030（内缩 6px），
-垂直中心 306 = 容器中心；右侧图标列 969–996，与胶囊间距 10px。
+这个位置前后踩过两次坑，**都别再回去**：
+
+1. 让 `SwipeNav` 当 `.videos-view` 的 flex 子元素（2026-11 之前的写法）：它会占掉固定宽度，把视频容器挤窄，视频因此等比留黑边，按钮落在黑边上，看着像"飘在画面外"。
+2. 给 `SwipeNav` 加 `position:absolute` + 负 `right` 硬顶到卡片外：位置是对了，但依赖负偏移，窗口一窄就溢出屏幕，还得去掉父级 `overflow:hidden`。
+
+用真实布局列的好处：垂直居中天然跟卡片对齐，不依赖 overflow，任意宽度都不溢出。
+
+实测（`.nav-rail` 方案，`scrollOverflow` 均为 0）：
+
+| 视口 | 卡片右边缘 | 胶囊 | 距卡片 | 距窗口右边 |
+|---|---|---|---|---|
+| 900 | 845 | 856–880 | 11px | 20px |
+| 1080 | 1016 | 1031–1055 | 15px | 25px |
+| 1440 | 1358 | 1382–1406 | 24px | 34px |
+
+三种宽度下胶囊的垂直中心与卡片中心完全一致。
 
 ## 7. 已知问题（尚未修，按优先级）
 
@@ -225,7 +237,7 @@ export async function getVideos(page = 1, perPage = 10): Promise<VideoItem[]> {
 ## 9. 给 AI 助手的硬性约定
 
 - **不要**把视频源判断逻辑写回页面里，一律走 provider。
-- **不要**把 `SwipeNav` 之类浮层控件改回 flex 子元素（见 6.6）。
+- **不要**给 `SwipeNav` 加 `position:absolute` 或负偏移，也不要把它塞回 `.videos-view` 内部；它由 `.nav-rail` 列定位（见 6.6）。
 - **不要**往 `VideosView.vue` 里加新逻辑或新样式，它有明确的上限。
 - **不要**在 `composables` 里写模板/样式，在 `components` 里写数据请求。
 - **不要**硬编码密钥；需要配置就加 `VITE_` 变量并同步更新 `.env.example` 与 `env.d.ts`。

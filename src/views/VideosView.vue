@@ -153,7 +153,10 @@ function goPrev() {
           </div>
         </div>
       </div>
+    </div>
 
+    <!-- 右侧导航列：卡片外侧的留白区，上/下切换按钮垂直居中放在这里 -->
+    <div class="nav-rail">
       <SwipeNav @prev="goPrev" @next="goNext" />
     </div>
   </div>
@@ -168,6 +171,10 @@ function goPrev() {
 
   .videos-view {
     position: relative;
+    /* flex:1 让卡片吃掉"容器宽度 - 右侧导航列"的剩余空间，
+       不再写死 85vw，避免和导航列加起来超过父容器导致横向溢出 */
+    flex: 1 1 auto;
+    min-width: 0;
     width: 85vw;
     height: 92vh;
     max-width: 100%;
@@ -242,6 +249,23 @@ function goPrev() {
       background-color: #000;
       display: block;
     }
+  }
+
+  /**
+   * 右侧导航列 —— 视频卡片外侧的留白区。
+   * 真实抖音的版式：卡片左边贴内容区、右边留一条窄列，上下切换按钮在这条列里垂直居中。
+   * 用真实布局列（而不是给按钮加负偏移）的好处：不依赖 overflow，窗口再窄也不会溢出屏幕。
+   */
+  .nav-rail {
+    flex: 0 0 5vw;
+    min-width: 40px;
+    /* 高度跟视频卡片一致（92vh），这样按钮是相对"卡片"垂直居中，
+       而不是相对整页垂直居中，两者会差几个像素 */
+    height: 92vh;
+    align-self: flex-start;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 }
 </style>

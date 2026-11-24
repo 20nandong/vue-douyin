@@ -35,18 +35,14 @@ const emit = defineEmits<{
 
 <style scoped lang="scss">
 /**
- * 定位说明（别改回 flex 子元素）：
- * 这里用 absolute 挂在视频区最右侧并垂直居中，是抖音的真实版式。
- * 如果让它留在 .videos-view 的 flex 流里，它就会占掉 4vw 宽度，
- * 把视频容器挤窄、自己偏到画面右侧的黑边上，看起来就像"飘在外面"。
- * 脱离文档流后，视频容器能占满整个宽度，箭头正好压在视频右边缘。
+ * 定位说明（别改回 .videos-view 的 flex 子元素，也别加 absolute）：
+ * 真实抖音里这条胶囊在**视频卡片外侧**的窄列中垂直居中，不在视频画面里。
+ *
+ * 所以它现在由 VideosView 的 .nav-rail 这一列来定位（父级 align-items:center），
+ * 组件本身只管自己的样式，不写死任何坐标。
+ * 早期写法是给按钮 absolute + 负 right 硬顶到卡片外，窗口一窄就溢出屏幕，已废弃。
  */
 .right.button-panel {
-  position: absolute;
-  top: 50%;
-  right: 6px;
-  transform: translateY(-50%);
-  z-index: 15;
   display: flex;
   flex-direction: column;
   justify-content: center;
