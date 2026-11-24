@@ -69,11 +69,11 @@ src/
 ├── composables/                 # ★ 播放页的所有逻辑，每个只管一件事
 │   ├── useVideoList.ts          # 拉列表、当前第几条、上/下切换（纯数据，不碰 DOM）
 │   ├── useVideoPlayer.ts        # play / pause / togglePlay / videoReady / 播放错误
-│   ├── useVideoProgress.ts      # duration / currentTime / percent / seek(ratio) / 快进快退
+│   ├── useVideoProgress.ts      # duration / currentTime / percent / seek(ratio) / 快进快退(按秒，3~7s)
 │   ├── useVolume.ts             # volumeLevel / isMuted / toggleMute / setVolume
 │   ├── useFullscreen.ts         # 对指定容器做全屏，监听 fullscreenchange
 │   ├── useWheelNav.ts           # 滚轮/触控板上下滑切换（带冷却，见 6.7）
-│   └── useKeyboardNav.ts        # 键盘 w/s/a/d（KEYMAP 可扩展，见 6.7）
+│   └── useKeyboardNav.ts        # 键盘 w/s/a/d + ↑↓←→ + 空格（KEYMAP 表驱动，见 6.7）
 │
 ├── components/video/            # ★ 播放页的 UI 切片
 │   ├── VideoControls.vue        # 音量面板 + 左下播放键 + 右下全屏 + 底部进度条（多根组件）
@@ -168,19 +168,24 @@ VITE_PEXELS_API_KEY=xxxxx
 
 用真实布局列的好处：垂直居中天然跟卡片对齐，不依赖 overflow，任意宽度都不溢出。
 
-实测（`.nav-rail` 方案，`scrollOverflow` 均为 0）：
+实测（`.nav-rail` 方案，`scrollOverflow` 均为 0；胶囊宽 30~38px，是原始写死 24px 的 1.25~1.58 倍）：
 
-| 视口 | 卡片右边缘 | 胶囊 | 距卡片 | 距窗口右边 |
+| 视口 | 卡片右边缘 | 胶囊 | 距卡片 | 胶囊尺寸 |
 |---|---|---|---|---|
-| 900 | 845 | 856–880 | 11px | 20px |
-| 1080 | 1016 | 1031–1055 | 15px | 25px |
-| 1440 | 1358 | 1382–1406 | 24px | 34px |
+| 900 | 845 | 853–883 | 8px | 30×84 |
+| 1080 | 1016 | 1026–1060 | 10px | 35×84 |
+| 1440 | 1358 | 1375–1413 | 17px | 38×84 |
+| 1920 | 1814 | 1843–1881 | 29px | 38×84 |
 
-三种宽度下胶囊的垂直中心与卡片中心完全一致。
+四种宽度下胶囊的垂直中心与卡片中心完全一致。
 
-### 6.7 滚轮与键盘：三种输入源共用同一套动作
+**宽度别再放大。** 曾用过 `clamp(36px, 3vw, 46px)`（热区约 2.8 倍），实测观感臃肿，已收回到
+`clamp(30px, 3.2vw, 38px)`。高度两版都用 `clamp(84px, 11vh, 110px)`，没有争议。
+按钮热区靠 `flex:1; width:100%` 吃满半块胶囊（约 35×36），不靠放大整体尺寸。
 
-上一条/下一条现在有三个入口：右侧胶囊按钮、鼠标滚轮、键盘 w/s。三者**不各自实现逻辑**，
+### 6.7 滚轮与键盘：多种输入源共用同一套动作
+
+上一条/下一条现有三个入口：右侧胶囊按钮、鼠标滚轮、键盘 `w`/`s`/`↑`/`↓`。三者**不各自实现逻辑**，
 全部调用 `VideosView` 里的 `goNext()` / `goPrev()`。加第四个入口（比如手势）只要再写一个 composable。
 
 **滚轮（`useWheelNav`）的两个参数不是随便给的**：
@@ -190,19 +195,48 @@ VITE_PEXELS_API_KEY=xxxxx
 
 监听范围是 `.main`（卡片 + 右侧切换列），**不是 window**：鼠标停在左侧导航或顶部搜索栏滚动时不应切视频。
 
-**键盘（`useKeyboardNav`）**：w 上一条 / s 下一条 / a 后退 10% / d 前进 10%。
+**键盘（`useKeyboardNav`）键位**：
 
-- 按键表是文件顶部的 `KEYMAP`，加 ↑↓ 或空格只改那一张表；
+| 键 | 动作 |
+|---|---|
+| `w` / `↑` | 上一条 |
+| `s` / `↓` | 下一条 |
+| `a` / `←` | 后退一小段 |
+| `d` / `→` | 前进一小段 |
+| `空格` | 暂停 / 播放 |
+
+- 按键表是文件顶部的 `KEYMAP`（键名一律小写，用 `event.key.toLowerCase()` 查），加键只改那一张表；
 - **必须排除输入框焦点**（`isTypingTarget`）。顶部搜索栏是真实 input，用户在搜索框里打 "w"
   却被切了下一条视频，会显得像 bug；
-- 带 Ctrl/Meta/Alt 的组合键一律放行，否则会抢掉 Ctrl+W 关闭标签页。
+- 带 Ctrl/Meta/Alt 的组合键一律放行，否则会抢掉 Ctrl+W 关闭标签页；
+- **`event.repeat` 直接吞掉**：按住空格会以每秒几十次闪暂停，按住 `↓` 会一路翻到底。
+  长按只算一次是刻意的，别为了"按住连续快进"去掉它。
 
-**快进快退的步长**是 `useVideoProgress.ts` 里的 `SEEK_STEP_RATIO = 0.1`（10%）。
-`seekByRatio` 把结果夹紧在 0~1：倒退回开头不会变负数，快进到结尾不会溢出
-（`currentTime` 超过 duration 会让 video 进入 error）。
+**快进快退的步长**（`useVideoProgress.ts` 顶部三个常量）：
 
-实测（1080×570，29.07s 视频）：按 d 前进 3.13s、按 a 后退 2.64s；
-连按 4 次 d 到 12.61s 后连按 4 次 a 回到 1.24s（夹在开头，未变负）。
+```ts
+SEEK_STEP_RATIO = 0.1        // 基准：视频总时长的 10%
+SEEK_STEP_MIN_SECONDS = 3    // 保底 3 秒
+SEEK_STEP_MAX_SECONDS = 7    // 封顶 7 秒
+```
+
+即 `clamp(duration * 0.1, 3, 7)`，由纯函数 `getSeekStepSeconds(duration)` 计算。
+**为什么要上下限**：本项目视频 20~40 秒，10% 只有 2~4 秒；但同一个播放器以后可能放 10 分钟的长视频，
+10% 就是 60 秒，按一下跳走一分钟太粗 —— 封顶 7 秒。反过来极短的片子 10% 不到 1 秒，按了像没反应 —— 保底 3 秒。
+`seekBySeconds` 把结果夹在 `[0, duration-0.05]`，倒退回开头不会变负数，快进到结尾不会溢出
+（`currentTime` 超过 duration 会让 video 进入 error），留 0.05s 余量避免刚好触发 `ended`。
+
+实测（1080×570，真实时长 29.07s，视频在播所以含约 0.25s 播放漂移）：
+
+| 场景 | 一次 `→`/`d` 的位移 |
+|---|---|
+| 真实 29.07s（10% = 2.9 → 保底 3） | +3.29s |
+| 伪造 20s 时长（10% = 2 → 保底 3） | +3.31s |
+| 伪造 60s 时长（10% = 6） | +6.27s |
+| 伪造 300s 时长（10% = 30 → 封顶 7） | +7.25s |
+
+键盘整体行为实测：空格 → `paused:true`，再按 → `paused:false`；`↓`/`↑` 切换索引正常；
+搜索框内输入 "ww" 索引不变（输入框内容为 `ww`），失焦后 `↓` 立即恢复生效。
 
 ## 7. 已知问题（尚未修，按优先级）
 
@@ -211,8 +245,7 @@ VITE_PEXELS_API_KEY=xxxxx
 3. `object-fit` 目前没生效（写在 `<video>` 属性上无效，CSS 里相关行被注释），视频是等比留黑边而非铺满。
 4. 侧栏高亮 `curNav` 是 `HomeView` 内的 ref，`onMounted` 里硬写 `"推荐"`（代码里已留注释说明）。刷新或直接访问 `#/wode` 时高亮错误。应从 `route.name` 派生。
 5. Element Plus 是**全量注册**（`app.use(ElementPlus)`），`index-*.js` 约 1MB，CSS 约 350KB。只为一个输入框付了这个代价，应改按需引入。
-6. 键盘目前只有 `w/s/a/d` 四个键，`↑↓` 切换、空格暂停还没接（`KEYMAP` 里加一行即可）；
-   没有移动端适配、没有触摸手势、没有错误边界。
+6. 没有移动端适配、没有触摸手势（滚轮只对桌面有效）、没有错误边界。键盘已覆盖 `w/s/a/d` + `↑↓←→` + 空格。
 7. 视频只有 8 条，靠 `% length` 无限循环，没有分页 / 无限流。
 8. 滚轮切换是"一格一条"，没有抖音那种跟手的手势动画（上一条滑出、下一条滑入）。
 
@@ -270,6 +303,10 @@ export async function getVideos(page = 1, perPage = 10): Promise<VideoItem[]> {
 - **不要**在 `VideosView.vue` 里直接 `addEventListener`。新增交互输入（手势、快捷键）写成 composable，
   动作复用 `goNext` / `goPrev`，不要另写一份切换逻辑（见 6.7）。
 - **不要**给键盘监听去掉 `isTypingTarget` 判断，搜索框会误触发。
+- **不要**把快进步长改回纯比例。现在是 `clamp(duration*0.1, 3s, 7s)`，上下限是为将来的长视频留的（见 6.7）。
+  要调手感就改那三个常量，别改公式结构。
+- **不要**放大 `SwipeNav` 胶囊宽度。它已经从 46px 收回到 38px 上限（用户反馈臃肿），
+  想增大点击范围就调整按钮的 `flex` 占比，别整体放大。
 - **不要**给 `SwipeNav` 加 `position:absolute` 或负偏移，也不要把它塞回 `.videos-view` 内部；它由 `.nav-rail` 列定位（见 6.6）。
 - **不要**往 `VideosView.vue` 里加新逻辑或新样式，它有明确的上限。
 - **不要**在 `composables` 里写模板/样式，在 `components` 里写数据请求。
