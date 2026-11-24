@@ -34,32 +34,45 @@ const emit = defineEmits<{
 </template>
 
 <style scoped lang="scss">
+/**
+ * 定位说明（别改回 flex 子元素）：
+ * 这里用 absolute 挂在视频区最右侧并垂直居中，是抖音的真实版式。
+ * 如果让它留在 .videos-view 的 flex 流里，它就会占掉 4vw 宽度，
+ * 把视频容器挤窄、自己偏到画面右侧的黑边上，看起来就像"飘在外面"。
+ * 脱离文档流后，视频容器能占满整个宽度，箭头正好压在视频右边缘。
+ */
 .right.button-panel {
-  width: 4vw;
-  height: 88vh;
-  max-width: 10%;
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  transform: translateY(-50%);
+  z-index: 15;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 20px 0;
 
   .button-container {
-    width: 50%;
-    height: 10%;
+    width: 24px;
+    height: 68px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     align-items: center;
     background-color: rgba(255, 255, 255, 0.1);
     border-radius: 28px;
-    padding: 15px 0;
+    padding: 10px 0;
     box-sizing: border-box;
+    transition: background-color 0.2s;
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.18);
+    }
   }
 
   .nav-button {
-    width: 15px;
-    height: 15px;
+    width: 24px;
+    height: 20px;
     background-color: rgba(255, 255, 255, 0);
     border: none;
     cursor: pointer;
@@ -67,16 +80,17 @@ const emit = defineEmits<{
     justify-content: center;
     align-items: center;
     padding: 0;
-    transition: background-color 0.2s;
-
-    &:hover {
-      background-color: rgba(255, 255, 255, 0.1);
-    }
 
     .icon {
-      width: 24px;
-      height: 24px;
+      width: 16px;
+      height: 16px;
       fill: #fff;
+      opacity: 0.85;
+      transition: opacity 0.2s;
+    }
+
+    &:hover .icon {
+      opacity: 1;
     }
   }
 
