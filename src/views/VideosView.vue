@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useVideoList } from '@/composables/useVideoList'
 import { useVideoPlayer } from '@/composables/useVideoPlayer'
 import { useVideoProgress } from '@/composables/useVideoProgress'
@@ -75,8 +75,9 @@ onMounted(async () => {
   })
 })
 
-onUnmounted(() => {
-  // 路由切走后别让视频音频还在响
+onBeforeUnmount(() => {
+  // 路由切走后别让视频音频还在响。
+  // 必须用 beforeUnmount：到 unmounted 时模板 ref 已经被置空，拿不到 <video> 了。
   pause()
 })
 
