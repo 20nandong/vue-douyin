@@ -67,12 +67,13 @@ const { toggleFullscreen } = useFullscreen(videoContainer)
 // 滚轮上下滑：和右侧胶囊按钮走同一套动作，不另写逻辑
 useWheelNav(mainView, { onPrev: goPrev, onNext: goNext })
 
-// w 上一条 / s 下一条 / a 后退一小段 / d 前进一小段
+// 键盘：w/↑ 上一条、s/↓ 下一条、a/← 后退、d/→ 前进、空格 暂停/播放
 useKeyboardNav({
   onPrev: goPrev,
   onNext: goNext,
   onSeekBackward: seekBackward,
   onSeekForward: seekForward,
+  onTogglePlay: togglePlay,
 })
 
 /** 换了视频源：把"就绪"和进度都清掉，让 loading 提示重新出现 */
