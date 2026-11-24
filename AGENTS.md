@@ -69,9 +69,11 @@ src/
 ├── composables/                 # ★ 播放页的所有逻辑，每个只管一件事
 │   ├── useVideoList.ts          # 拉列表、当前第几条、上/下切换（纯数据，不碰 DOM）
 │   ├── useVideoPlayer.ts        # play / pause / togglePlay / videoReady / 播放错误
-│   ├── useVideoProgress.ts      # duration / currentTime / percent / seek(ratio)
+│   ├── useVideoProgress.ts      # duration / currentTime / percent / seek(ratio) / 快进快退
 │   ├── useVolume.ts             # volumeLevel / isMuted / toggleMute / setVolume
-│   └── useFullscreen.ts         # 对指定容器做全屏，监听 fullscreenchange
+│   ├── useFullscreen.ts         # 对指定容器做全屏，监听 fullscreenchange
+│   ├── useWheelNav.ts           # 滚轮/触控板上下滑切换（带冷却，见 6.7）
+│   └── useKeyboardNav.ts        # 键盘 w/s/a/d（KEYMAP 可扩展，见 6.7）
 │
 ├── components/video/            # ★ 播放页的 UI 切片
 │   ├── VideoControls.vue        # 音量面板 + 左下播放键 + 右下全屏 + 底部进度条（多根组件）
@@ -176,6 +178,32 @@ VITE_PEXELS_API_KEY=xxxxx
 
 三种宽度下胶囊的垂直中心与卡片中心完全一致。
 
+### 6.7 滚轮与键盘：三种输入源共用同一套动作
+
+上一条/下一条现在有三个入口：右侧胶囊按钮、鼠标滚轮、键盘 w/s。三者**不各自实现逻辑**，
+全部调用 `VideosView` 里的 `goNext()` / `goPrev()`。加第四个入口（比如手势）只要再写一个 composable。
+
+**滚轮（`useWheelNav`）的两个参数不是随便给的**：
+
+- `threshold: 8` —— 过滤触控板的高频抖动；
+- `cooldown: 480ms` —— 一次滚轮手势浏览器会连发多个 wheel 事件，不挡的话一口气跳过好几条。
+
+监听范围是 `.main`（卡片 + 右侧切换列），**不是 window**：鼠标停在左侧导航或顶部搜索栏滚动时不应切视频。
+
+**键盘（`useKeyboardNav`）**：w 上一条 / s 下一条 / a 后退 10% / d 前进 10%。
+
+- 按键表是文件顶部的 `KEYMAP`，加 ↑↓ 或空格只改那一张表；
+- **必须排除输入框焦点**（`isTypingTarget`）。顶部搜索栏是真实 input，用户在搜索框里打 "w"
+  却被切了下一条视频，会显得像 bug；
+- 带 Ctrl/Meta/Alt 的组合键一律放行，否则会抢掉 Ctrl+W 关闭标签页。
+
+**快进快退的步长**是 `useVideoProgress.ts` 里的 `SEEK_STEP_RATIO = 0.1`（10%）。
+`seekByRatio` 把结果夹紧在 0~1：倒退回开头不会变负数，快进到结尾不会溢出
+（`currentTime` 超过 duration 会让 video 进入 error）。
+
+实测（1080×570，29.07s 视频）：按 d 前进 3.13s、按 a 后退 2.64s；
+连按 4 次 d 到 12.61s 后连按 4 次 a 回到 1.24s（夹在开头，未变负）。
+
 ## 7. 已知问题（尚未修，按优先级）
 
 1. 单个视频加载失败会触发 `error`，而 `v-else-if="error"` 会把整个播放区替换成一行红字，体验差。应改为只在该视频上提示并自动跳下一条。
@@ -183,8 +211,10 @@ VITE_PEXELS_API_KEY=xxxxx
 3. `object-fit` 目前没生效（写在 `<video>` 属性上无效，CSS 里相关行被注释），视频是等比留黑边而非铺满。
 4. 侧栏高亮 `curNav` 是 `HomeView` 内的 ref，`onMounted` 里硬写 `"推荐"`（代码里已留注释说明）。刷新或直接访问 `#/wode` 时高亮错误。应从 `route.name` 派生。
 5. Element Plus 是**全量注册**（`app.use(ElementPlus)`），`index-*.js` 约 1MB，CSS 约 350KB。只为一个输入框付了这个代价，应改按需引入。
-6. 没有键盘快捷键（↑↓ 切换、空格暂停）、没有移动端适配、没有错误边界。
+6. 键盘目前只有 `w/s/a/d` 四个键，`↑↓` 切换、空格暂停还没接（`KEYMAP` 里加一行即可）；
+   没有移动端适配、没有触摸手势、没有错误边界。
 7. 视频只有 8 条，靠 `% length` 无限循环，没有分页 / 无限流。
+8. 滚轮切换是"一格一条"，没有抖音那种跟手的手势动画（上一条滑出、下一条滑入）。
 
 > `npm run lint`（oxlint + eslint）与 `vue-tsc` 已于 2026-11-24 全部清零，
 > 提交前必须保持全绿。`src/assets/iconfont/**` 是 iconfont.cn 生成的压缩产物，已在
@@ -237,6 +267,9 @@ export async function getVideos(page = 1, perPage = 10): Promise<VideoItem[]> {
 ## 9. 给 AI 助手的硬性约定
 
 - **不要**把视频源判断逻辑写回页面里，一律走 provider。
+- **不要**在 `VideosView.vue` 里直接 `addEventListener`。新增交互输入（手势、快捷键）写成 composable，
+  动作复用 `goNext` / `goPrev`，不要另写一份切换逻辑（见 6.7）。
+- **不要**给键盘监听去掉 `isTypingTarget` 判断，搜索框会误触发。
 - **不要**给 `SwipeNav` 加 `position:absolute` 或负偏移，也不要把它塞回 `.videos-view` 内部；它由 `.nav-rail` 列定位（见 6.6）。
 - **不要**往 `VideosView.vue` 里加新逻辑或新样式，它有明确的上限。
 - **不要**在 `composables` 里写模板/样式，在 `components` 里写数据请求。

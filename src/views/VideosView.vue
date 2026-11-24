@@ -5,6 +5,8 @@ import { useVideoPlayer } from '@/composables/useVideoPlayer'
 import { useVideoProgress } from '@/composables/useVideoProgress'
 import { useVolume } from '@/composables/useVolume'
 import { useFullscreen } from '@/composables/useFullscreen'
+import { useWheelNav } from '@/composables/useWheelNav'
+import { useKeyboardNav } from '@/composables/useKeyboardNav'
 import SideActions from '@/components/video/SideActions.vue'
 import SwipeNav from '@/components/video/SwipeNav.vue'
 import VideoControls from '@/components/video/VideoControls.vue'
@@ -23,6 +25,8 @@ import VideoMeta from '@/components/video/VideoMeta.vue'
 const videoPlayer = ref<HTMLVideoElement | null>(null)
 /** 全屏的作用对象：视频容器，而不是整个页面 */
 const videoContainer = ref<HTMLElement | null>(null)
+/** 滚轮监听的范围：整个播放区（卡片 + 右侧切换列），不含左侧导航 */
+const mainView = ref<HTMLElement | null>(null)
 
 const {
   videoList,
@@ -52,13 +56,24 @@ const {
   error.value = message
 })
 
-const { percent, onLoadedMetadata, onTimeUpdate, seek, resetProgress } =
+const { percent, onLoadedMetadata, onTimeUpdate, seek, seekForward, seekBackward, resetProgress } =
   useVideoProgress(videoPlayer)
 
 const { volumeLevel, isMuted, applyInitialMute, toggleMute, setVolume, onVolumeChange } =
   useVolume(videoPlayer)
 
 const { toggleFullscreen } = useFullscreen(videoContainer)
+
+// 滚轮上下滑：和右侧胶囊按钮走同一套动作，不另写逻辑
+useWheelNav(mainView, { onPrev: goPrev, onNext: goNext })
+
+// w 上一条 / s 下一条 / a 后退一小段 / d 前进一小段
+useKeyboardNav({
+  onPrev: goPrev,
+  onNext: goNext,
+  onSeekBackward: seekBackward,
+  onSeekForward: seekForward,
+})
 
 /** 换了视频源：把"就绪"和进度都清掉，让 loading 提示重新出现 */
 watch(currentUrl, () => {
@@ -93,7 +108,7 @@ function goPrev() {
 </script>
 
 <template>
-  <div class="main">
+  <div ref="mainView" class="main">
     <div class="videos-view">
       <!-- 加载状态 -->
       <div v-if="loading" class="loading">加载视频中...</div>
