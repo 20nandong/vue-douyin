@@ -1,80 +1,60 @@
-<script setup>
-import { ref,onMounted,onUnmounted,computed } from "vue"
-
-// import router from "../router/index.ts"
+<script setup lang="ts">
+import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
+
+/** 侧栏一项的数据结构。line 是分隔线，没有 routeName */
+interface NavItem {
+  name: string
+  routeName?: string
+  /** 精灵图 bg-position，line 没有图标所以没有这一项 */
+  position?: string
+}
+
 const router = useRouter()
 
-
 // 存储所有导航信息
-const navs = [
-    { name: "精选", routeName: "jingxuan", position: "background-position: 0px 0px;" },
-    { name: "推荐", routeName: "tuijian", position: "background-position: -48px 0px;" },
-    { name: "搜索", routeName: "sousuo", position: "background-position: -96px 0px;" },
-    { name: "line" },
-    { name: "关注", routeName: "guanzhu", position: "background-position: -144px 0px;" },
-    { name: "朋友", routeName: "pengyou", position: "background-position: -192px 0px;" },
-    { name: "我的", routeName: "wode", position: "background-position: -816px 0px;" },
-    { name: "line" },
-    { name: "直播", routeName: "zhibo", position: "background-position: -240px 0px;" },
-    { name: "放映厅", routeName: "fangyinting", position: "background-position: -288px 0px;" },
-    { name: "短剧", routeName: "duanju", position: "background-position: -960px 0px;" },
-    { name: "小游戏", routeName: "xiaoyouxi", position: "background-position: -336px 0px;" }
+const navs: NavItem[] = [
+  { name: '精选', routeName: 'jingxuan', position: 'background-position: 0px 0px;' },
+  { name: '推荐', routeName: 'tuijian', position: 'background-position: -48px 0px;' },
+  { name: '搜索', routeName: 'sousuo', position: 'background-position: -96px 0px;' },
+  { name: 'line' },
+  { name: '关注', routeName: 'guanzhu', position: 'background-position: -144px 0px;' },
+  { name: '朋友', routeName: 'pengyou', position: 'background-position: -192px 0px;' },
+  { name: '我的', routeName: 'wode', position: 'background-position: -816px 0px;' },
+  { name: 'line' },
+  { name: '直播', routeName: 'zhibo', position: 'background-position: -240px 0px;' },
+  { name: '放映厅', routeName: 'fangyinting', position: 'background-position: -288px 0px;' },
+  { name: '短剧', routeName: 'duanju', position: 'background-position: -960px 0px;' },
+  { name: '小游戏', routeName: 'xiaoyouxi', position: 'background-position: -336px 0px;' },
 ]
 
-//响应式数据
-const curNav = ref("精选")
+// 响应式数据
+const curNav = ref('精选')
 const searchActive = ref(false)
-const searchvalue =  ref("")
+const searchvalue = ref('')
 
-const handleResize = () => {
-    screenWidth.value = window.innerWidth
+// 动态计算 css 样式的 class 导航相关
+function navClass(nav: NavItem) {
+  const clsList: string[] = []
+  clsList.push(nav.name !== 'line' ? 'nav' : 'nav-line')
+  // 根据当前选中的设置高亮样式
+  clsList.push(curNav.value === nav.name ? 'active' : '')
+  return clsList
 }
 
-//获取屏幕宽度
-const screenWidth = ref(window.innerWidth)
-const searchBarStyle = computed(() => {
-    //动态计算搜索框的位置
-    const toolbarWidth = 170 + 16 + 32 + 16 //工具栏宽度+右边距+头像宽度+额外边距
-    return {
-        width:screenWidth.value < 768 ? '80%' : '40%',
-        maxWidth:'500px',
-        minWidth:'300px'
-    
-    }
-})
-
-
-
-
-//动态计算css样式的class 导航相关
-function navClass(nav){
-    let cls_list = []
-    cls_list.push(nav.name != "line" ? "nav" : "nav-line")
-    //根据当前选中的 设置高亮样式
-    cls_list.push(curNav.value == nav.name ? "active" : "")
-    return cls_list
-}
-
-function navClick(nav){
-    //如果不加，点击line时会跳转到路由，导致页面空白
-    if(nav.routeName){
-        curNav.value = nav.name
-        router.push({name:nav.routeName})
-    }
+function navClick(nav: NavItem) {
+  // 如果不加，点击 line 时会跳转到路由，导致页面空白
+  if (nav.routeName) {
+    curNav.value = nav.name
+    router.push({ name: nav.routeName })
+  }
 }
 
 onMounted(() => {
-    curNav.value = "推荐"
-    window.addEventListener('resize',handleResize)
+  // 已知问题：这里固定高亮"推荐"，所以直接访问 #/wode 时高亮是错的。
+  // 正确做法是从 route.name 反推 curNav，留给后面接后端那一轮一起改。
+  curNav.value = '推荐'
 })
-
-
-//清理时间监听
-onUnmounted(() => {
-    window.removeEventListener('resize',handleResize)
-})
-
 </script>
 
 <template>

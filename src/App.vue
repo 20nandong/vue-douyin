@@ -1,7 +1,3 @@
-<script setup >
-  // import Homeview from "./views/homeview.vue"
-</script>
-
 <template>
     <div class="app-wrapper">
         <router-view></router-view>

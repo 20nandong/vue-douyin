@@ -1,16 +1,10 @@
-<script>
-    export default {
-        name: "blockview"
-    }
-</script>
-
 <template>
     <div class="block-wrapper">
         功能尚未开发,敬请期待
     </div>
 </template>
 
-<style>
+<style scoped>
     .block-wrapper{
         display:flex;
         font-size:50px;

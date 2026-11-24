@@ -30,8 +30,9 @@
 | 样式 | SCSS（`<style scoped lang="scss">`）+ Less（`HomeView` 用 `lang="less"`） |
 | 图标 | 内联 SVG + iconfont（`src/assets/iconfont/`，全局注册在 `main.ts`） |
 
-**装了但当前没用到的**：`pinia`（未 `createPinia`）、`HomeIcon.vue`（未引用的图标合集）。
-`lodash` / `swiper` / `xgplayer` 已于 2026-11-24 的重构中从依赖中移除。
+**装了但当前没用到的**：`pinia`（未 `createPinia`）。
+`lodash` / `swiper` / `xgplayer` 已于 2026-11-24 的重构中从依赖中移除；
+`src/components/icons/HomeIcon.vue`（从未被引用的图标合集）同轮删除。
 
 ## 3. 跑起来
 
@@ -76,13 +77,14 @@ src/
 │   ├── VideoControls.vue        # 音量面板 + 左下播放键 + 右下全屏 + 底部进度条（多根组件）
 │   ├── SideActions.vue          # 右侧竖排：点赞/评论/收藏/分享（目前纯装饰）
 │   ├── VideoMeta.vue            # 左下角作者名、作者主页、第 n / 总数
-│   └── SwipeNav.vue             # 最右侧上一条/下一条按钮
+│   └── SwipeNav.vue             # 最右侧上一条/下一条按钮（absolute 定位，见 6.6）
 │
 ├── views/
 │   ├── HomeView.vue             # 外壳：左侧导航 + 顶部搜索栏 + <router-view>
 │   ├── VideosView.vue           # ★ 播放页，只做"编排"，约 3xx 行（含样式）
 │   └── BlockView.vue            # "功能尚未开发"占位页
 │
+├── shims-vue.d.ts               # 让 TS 认识 *.vue 导入；vue-tsc --build 缺了它必报 TS7016
 └── assets/                      # 图片、iconfont
 ```
 
@@ -151,16 +153,30 @@ VITE_PEXELS_API_KEY=xxxxx
 - 所有 `VITE_` 前缀变量都会被打包进前端产物，等同于公开。真正的密钥只能放后端。
 - 历史提交里可能仍残留旧密钥，因此**吊销旧 Key 比删代码更重要**。
 
+### 6.6 上/下切换按钮为什么用 absolute
+
+`SwipeNav.vue` 是 `.videos-view` 的子元素，但样式上是 `position: absolute; top: 50%; right: 6px; transform: translateY(-50%)`。
+
+**别改回 flex 子元素。** 它一旦参与 `.videos-view` 的 flex 布局，就会占掉固定宽度（原来是 `4vw`），
+把 `.content-wrapper` / 视频容器挤窄，自己则被推到画面右侧的黑边上，看起来像"飘在视频外面"。
+脱离文档流后：视频容器能占满整个宽度，按钮正好压在视频右边缘、垂直居中——这才是抖音的版式。
+
+实测坐标（1080×570 视口）：`.videos-view` 右边缘 1036，胶囊 1006–1030（内缩 6px），
+垂直中心 306 = 容器中心；右侧图标列 969–996，与胶囊间距 10px。
+
 ## 7. 已知问题（尚未修，按优先级）
 
 1. 单个视频加载失败会触发 `error`，而 `v-else-if="error"` 会把整个播放区替换成一行红字，体验差。应改为只在该视频上提示并自动跳下一条。
 2. 切换视频只改 `:src`，**没有预加载下一条**，每次切换都要等。
 3. `object-fit` 目前没生效（写在 `<video>` 属性上无效，CSS 里相关行被注释），视频是等比留黑边而非铺满。
-4. 侧栏高亮 `curNav` 是 `HomeView` 内的 ref，`onMounted` 里硬写 `"推荐"`。刷新或直接访问 `#/wode` 时高亮错误。应从 `route.name` 派生。
-5. `HomeView.vue` 有未使用变量（`searchBarStyle`、`toolbarWidth`），`cls_list` 应用 `const`；`BlockView.vue` / `HomeIcon.vue` / `shims-vue.d.ts` 有 lint 报错。`npm run lint` 目前不是全绿。
-6. Element Plus 是**全量注册**（`app.use(ElementPlus)`），`index-*.js` 约 1MB，CSS 约 350KB。只为一个输入框付了这个代价，应改按需引入。
-7. 没有键盘快捷键（↑↓ 切换、空格暂停）、没有移动端适配、没有错误边界。
-8. 视频只有 8 条，靠 `% length` 无限循环，没有分页 / 无限流。
+4. 侧栏高亮 `curNav` 是 `HomeView` 内的 ref，`onMounted` 里硬写 `"推荐"`（代码里已留注释说明）。刷新或直接访问 `#/wode` 时高亮错误。应从 `route.name` 派生。
+5. Element Plus 是**全量注册**（`app.use(ElementPlus)`），`index-*.js` 约 1MB，CSS 约 350KB。只为一个输入框付了这个代价，应改按需引入。
+6. 没有键盘快捷键（↑↓ 切换、空格暂停）、没有移动端适配、没有错误边界。
+7. 视频只有 8 条，靠 `% length` 无限循环，没有分页 / 无限流。
+
+> `npm run lint`（oxlint + eslint）与 `vue-tsc` 已于 2026-11-24 全部清零，
+> 提交前必须保持全绿。`src/assets/iconfont/**` 是 iconfont.cn 生成的压缩产物，已在
+> `.oxlintrc.json` 的 `ignorePatterns` 里排除，不要去改它。
 
 ## 8. 后续方向（用户已确认）
 
@@ -209,6 +225,7 @@ export async function getVideos(page = 1, perPage = 10): Promise<VideoItem[]> {
 ## 9. 给 AI 助手的硬性约定
 
 - **不要**把视频源判断逻辑写回页面里，一律走 provider。
+- **不要**把 `SwipeNav` 之类浮层控件改回 flex 子元素（见 6.6）。
 - **不要**往 `VideosView.vue` 里加新逻辑或新样式，它有明确的上限。
 - **不要**在 `composables` 里写模板/样式，在 `components` 里写数据请求。
 - **不要**硬编码密钥；需要配置就加 `VITE_` 变量并同步更新 `.env.example` 与 `env.d.ts`。
