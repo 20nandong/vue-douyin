@@ -54,9 +54,12 @@ const emit = defineEmits<{
    * 为什么不用百分比：父级 .nav-rail 只有 5vw 宽（最小 40px），
    * 在里面写 % 是"相对胶囊自己"，绕一圈还是定值。
    * vw / vh 才是相对屏幕的，外面再套 clamp 限住上下限，窗口再大再小都不会变形。
+   *
+   * 宽度基准：原始版本是写死的 24px，这里取它的 1.3~1.6 倍（1080 视口约 34px，即 1.4 倍），
+   * 比原来好点，又不会像 46px 那版一样显得臃肿。高度沿用上一版，觉得是够的。
    */
   .button-container {
-    width: clamp(36px, 3vw, 46px);
+    width: clamp(30px, 3.2vw, 38px);
     /* 高度跟着视口高度走：570 高的窗口给 84，1080 高给到 110 封顶 */
     height: clamp(84px, 11vh, 110px);
     display: flex;
@@ -74,8 +77,8 @@ const emit = defineEmits<{
   }
 
   .nav-button {
-    /* 整块都能点：宽度吃满胶囊、上下各占一半，
-       热区从原来的 24×20 变成约 46×44，不用瞄那么准了 */
+    /* 整块都能点：宽度吃满胶囊、上下各占一半。
+       热区不再是原来那个 24×20 的小图标，而是约 32×38 的半块胶囊 */
     flex: 1;
     width: 100%;
     background-color: transparent;
@@ -93,8 +96,8 @@ const emit = defineEmits<{
     }
 
     .icon {
-      width: clamp(15px, 1.4vw, 20px);
-      height: clamp(15px, 1.4vw, 20px);
+      width: clamp(14px, 1.25vw, 18px);
+      height: clamp(14px, 1.25vw, 18px);
       fill: #fff;
       opacity: 0.85;
       transition: opacity 0.2s;
